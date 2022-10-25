@@ -8,14 +8,17 @@
 #include "Components/InputComponent.h"
 #include "GameFramework/InputSettings.h"
 
+#include "MyCharMovComp.h"
 
 //////////////////////////////////////////////////////////////////////////
 // APolarisCharacter
 
-APolarisCharacter::APolarisCharacter()
+APolarisCharacter::APolarisCharacter(const FObjectInitializer& objectInit)
+	: Super(objectInit.SetDefaultSubobjectClass<UMyCharMovComp>(ACharacter::CharacterMovementComponentName))
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
+	GetCapsuleComponent()->SetSimulatePhysics(true);
 
 	// set our turn rates for input
 	TurnRateGamepad = 45.f;
@@ -105,35 +108,43 @@ void APolarisCharacter::EndTouch(const ETouchIndex::Type FingerIndex, const FVec
 	TouchItem.bIsPressed = false;
 }
 
-void APolarisCharacter::MoveForward(float Value)
-{
-	if (Value != 0.0f)
+
+
+#pragma region Locomotion
+
+	void APolarisCharacter::MoveForward(float Value)
 	{
-		// add movement in that direction
-		AddMovementInput(GetActorForwardVector(), Value);
-	}
-}
+		if (Value != 0.0f)
+		{
+			// add movement in that direction
+			AddMovementInput(GetActorForwardVector(), Value);
+		}
 
-void APolarisCharacter::MoveRight(float Value)
-{
-	if (Value != 0.0f)
+		
+	}
+
+	void APolarisCharacter::MoveRight(float Value)
 	{
-		// add movement in that direction
-		AddMovementInput(GetActorRightVector(), Value);
+		if (Value != 0.0f)
+		{
+			// add movement in that direction
+			AddMovementInput(GetActorRightVector(), Value);
+		}
 	}
-}
 
-void APolarisCharacter::TurnAtRate(float Rate)
-{
-	// calculate delta for this frame from the rate information
-	AddControllerYawInput(Rate * TurnRateGamepad * GetWorld()->GetDeltaSeconds());
-}
+	void APolarisCharacter::TurnAtRate(float Rate)
+	{
+		// calculate delta for this frame from the rate information
+		AddControllerYawInput(Rate * TurnRateGamepad * GetWorld()->GetDeltaSeconds());
+	}
 
-void APolarisCharacter::LookUpAtRate(float Rate)
-{
-	// calculate delta for this frame from the rate information
-	AddControllerPitchInput(Rate * TurnRateGamepad * GetWorld()->GetDeltaSeconds());
-}
+	void APolarisCharacter::LookUpAtRate(float Rate)
+	{
+		// calculate delta for this frame from the rate information
+		AddControllerPitchInput(Rate * TurnRateGamepad * GetWorld()->GetDeltaSeconds());
+	}
+
+#pragma endregion Locomotion
 
 bool APolarisCharacter::EnableTouchscreenMovement(class UInputComponent* PlayerInputComponent)
 {
