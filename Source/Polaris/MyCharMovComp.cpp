@@ -93,6 +93,18 @@ void UMyCharMovComp::TickComponent(float delta_time, ELevelTick tick_type, FActo
 
 		}
 	}
+
+	if (isBolting)
+	{
+		boltRemainTime -= delta_time;
+
+		if (boltRemainTime <= 0)
+		{
+			Velocity = FVector(0,0,0);
+			isBolting = false;
+			SetMovementMode(MOVE_Falling);
+		}
+	}
 }
 
 bool UMyCharMovComp::DoJump(bool bReplayiingMoves)
@@ -129,7 +141,15 @@ bool UMyCharMovComp::DoJump(bool bReplayiingMoves)
 void UMyCharMovComp::UseBolt(FVector direction)
 {
 	if (PawnOwner)
-		PawnOwner->Internal_AddMovementInput(direction * boltStrength, false);
+	{
+		isJumping = false;
+		Velocity.Z = 0;
+		isBolting = true;
+		SetMovementMode(MOVE_Flying);
+		AddImpulse(direction * boltStrength * 1000, false);
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Dash!"));
+		boltRemainTime = boltTime;
+	}
 }
 
 /*bool UMyCharMovComp::IsFalling() const

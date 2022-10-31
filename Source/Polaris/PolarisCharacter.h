@@ -104,6 +104,6 @@ public:
 private: 
 
 	//UPROPERTY(Category = Character, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	//TObjectPtr<UMyCharMovComp> MyCharMov;
+	//UMyCharMovComp* MyCharMov = nullptr;
 };
 

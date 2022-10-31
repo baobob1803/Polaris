@@ -45,6 +45,7 @@ void APolarisCharacter::BeginPlay()
 	// Call the base class  
 	Super::BeginPlay();
 
+	//MyCharMov = Cast<UMyCharMovComp>(GetCharacterMovement());
 }
 
 //////////////////////////////////////////////////////////////////////////// Input
@@ -149,7 +150,14 @@ void APolarisCharacter::EndTouch(const ETouchIndex::Type FingerIndex, const FVec
 
 	void APolarisCharacter::Bolt()
 	{
-		//Made Behaviour
+		UMyCharMovComp* MyCharMov = Cast<UMyCharMovComp>(GetCharacterMovement());
+		
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Use Bolt!"));
+
+		if (MyCharMov)
+		{
+			MyCharMov->UseBolt(GetActorForwardVector());
+		}
 	}
 
 #pragma endregion Locomotion
