@@ -48,6 +48,8 @@ protected:
 	/** Fires a projectile. */
 	void OnPrimaryAction();
 
+	void Bolt();
+
 	/** Handles moving forward/backward */
 	void MoveForward(float Val);
 
@@ -99,5 +101,9 @@ public:
 	/** Returns FirstPersonCameraComponent subobject **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
 
+private: 
+
+	//UPROPERTY(Category = Character, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	//TObjectPtr<UMyCharMovComp> MyCharMov;
 };
 

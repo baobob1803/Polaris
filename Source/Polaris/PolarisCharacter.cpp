@@ -61,6 +61,9 @@ void APolarisCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerI
 	// Bind fire event
 	PlayerInputComponent->BindAction("PrimaryAction", IE_Pressed, this, &APolarisCharacter::OnPrimaryAction);
 
+	// Bolt event
+	PlayerInputComponent->BindAction("Bolt", IE_Pressed, this, &APolarisCharacter::Bolt);
+
 	// Enable touchscreen input
 	EnableTouchscreenMovement(PlayerInputComponent);
 
@@ -142,6 +145,11 @@ void APolarisCharacter::EndTouch(const ETouchIndex::Type FingerIndex, const FVec
 	{
 		// calculate delta for this frame from the rate information
 		AddControllerPitchInput(Rate * TurnRateGamepad * GetWorld()->GetDeltaSeconds());
+	}
+
+	void APolarisCharacter::Bolt()
+	{
+		//Made Behaviour
 	}
 
 #pragma endregion Locomotion

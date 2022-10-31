@@ -12,17 +12,25 @@
 UCLASS()
 class POLARIS_API UMyCharMovComp : public UCharacterMovementComponent
 {
-	GENERATED_BODY()
+	GENERATED_UCLASS_BODY()
 
 protected:
 
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float delta_time, ELevelTick tick_type, FActorComponentTickFunction* tick_function) override;
 	virtual bool DoJump(bool bReplayingMoves) override;
-	virtual bool IsFalling() const override;
+	//virtual bool IsFalling() const override;
+
+	void UseBolt(FVector direction);
 
 	UPROPERTY(EDITAnywhere, BlueprintReadWrite, Category = "Custom Movement", meta = (DisplayName = "Jump Curve"))
 	UCurveFloat * jumpCurve;
+
+	UPROPERTY(EDITAnywhere, BlueprintReadWrite, Category = "Bolt", meta = (DisplayName = "Bolt Strength"))
+	float boltStrength = 300.0f;
+
+	UPROPERTY(EDITAnywhere, BlueprintReadWrite, Category = "Bolt", meta = (DisplayName = "Bolt Cooldown"))
+	float boltCoolDown = 3.0f;
 
 private:
 
@@ -32,5 +40,7 @@ private:
 
 	float jumpMinTime;
 	float jumpMaxTime;
+	
 
+	bool canBolt;
 };
