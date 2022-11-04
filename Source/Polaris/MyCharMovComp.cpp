@@ -18,6 +18,9 @@ void UMyCharMovComp::BeginPlay()
 
 	if (jumpCurve)
 		jumpCurve->GetTimeRange(jumpMinTime, jumpMaxTime);
+
+	GetWorld()->GetTimerManager().SetTimer(boltCoolDownHandler, this, &UMyCharMovComp::BoltCoolDown, 0.1f, true);
+	GetWorld()->GetTimerManager().PauseTimer(boltCoolDownHandler);
 }
 
 void UMyCharMovComp::TickComponent(float delta_time, ELevelTick tick_type, FActorComponentTickFunction* tick_function)
@@ -102,7 +105,9 @@ void UMyCharMovComp::TickComponent(float delta_time, ELevelTick tick_type, FActo
 		{
 			Velocity = FVector(0,0,0);
 			isBolting = false;
+			boltCDRemainTime = boltCDDuration;
 			SetMovementMode(MOVE_Falling);
+			GetWorld()->GetTimerManager().UnPauseTimer(boltCoolDownHandler);
 		}
 	}
 }
@@ -140,8 +145,9 @@ bool UMyCharMovComp::DoJump(bool bReplayiingMoves)
 
 void UMyCharMovComp::UseBolt(FVector direction)
 {
-	if (PawnOwner)
+	if (PawnOwner && canBolt)
 	{
+		canBolt = false;
 		isJumping = false;
 		Velocity.Z = 0;
 		isBolting = true;
@@ -149,6 +155,27 @@ void UMyCharMovComp::UseBolt(FVector direction)
 		AddImpulse(direction * boltStrength * 1000, false);
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Dash!"));
 		boltRemainTime = boltTime;
+	}
+}
+
+void UMyCharMovComp::BoltCoolDown()
+{
+	boltCDRemainTime -= 0.1f;
+
+	const FVector capsulLocation = UpdatedComponent->GetComponentLocation();
+	FFindFloorResult floorResulst;
+	FindFloor(capsulLocation, floorResulst, false);
+
+	if (floorResulst.IsWalkableFloor() && IsValidLandingSpot(capsulLocation, floorResulst.HitResult))
+	{
+		boltTouchFloorAfter = true;
+	}
+
+	if (boltCDRemainTime <= 0 && boltTouchFloorAfter)
+	{
+		canBolt = true;
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Purple, TEXT("Stop"));
+		GetWorld()->GetTimerManager().PauseTimer(boltCoolDownHandler);
 	}
 }
 

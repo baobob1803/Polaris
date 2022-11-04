@@ -21,6 +21,9 @@ protected:
 	virtual bool DoJump(bool bReplayingMoves) override;
 	//virtual bool IsFalling() const override;
 
+	UFUNCTION()
+	void BoltCoolDown();
+
 public: 
 
 	void UseBolt(FVector direction);
@@ -36,7 +39,7 @@ protected:
 	float boltTime = 0.5f;
 
 	UPROPERTY(EDITAnywhere, BlueprintReadWrite, Category = "Bolt", meta = (DisplayName = "Bolt Cooldown"))
-	float boltCoolDown = 3.0f;
+	float boltCDDuration = 3.0f;
 
 private:
 
@@ -48,7 +51,11 @@ private:
 	float jumpMaxTime;
 	
 
-	bool canBolt;
+	bool canBolt= true;
 	bool isBolting;
 	float boltRemainTime;
+
+	float boltCDRemainTime;
+	FTimerHandle boltCoolDownHandler;
+	bool boltTouchFloorAfter;
 };

@@ -118,17 +118,19 @@ void APolarisCharacter::EndTouch(const ETouchIndex::Type FingerIndex, const FVec
 
 	void APolarisCharacter::MoveForward(float Value)
 	{
+		forwardAxesValue = Value;
+
 		if (Value != 0.0f)
 		{
 			// add movement in that direction
 			AddMovementInput(GetActorForwardVector(), Value);
 		}
-
-		
 	}
 
 	void APolarisCharacter::MoveRight(float Value)
 	{
+		rightAxesValue = Value;
+
 		if (Value != 0.0f)
 		{
 			// add movement in that direction
@@ -150,13 +152,26 @@ void APolarisCharacter::EndTouch(const ETouchIndex::Type FingerIndex, const FVec
 
 	void APolarisCharacter::Bolt()
 	{
+		// Calculate the direction
+		FVector rightValue = GetActorRightVector() * rightAxesValue;
+		FVector forwardValue = GetActorForwardVector() * forwardAxesValue;
+
+		FVector boltDirection = rightValue + forwardValue;
+
+		// Normalize the Vector 
+		FVector boltDirectionNormalized = boltDirection.GetSafeNormal();
+
 		UMyCharMovComp* MyCharMov = Cast<UMyCharMovComp>(GetCharacterMovement());
 		
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Use Bolt!"));
 
+
 		if (MyCharMov)
 		{
-			MyCharMov->UseBolt(GetActorForwardVector());
+			if (boltDirection.Length() != 0)
+				MyCharMov->UseBolt(boltDirectionNormalized);
+			else
+				MyCharMov->UseBolt(GetActorForwardVector());
 		}
 	}
 

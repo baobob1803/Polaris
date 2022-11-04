@@ -101,9 +101,9 @@ public:
 	/** Returns FirstPersonCameraComponent subobject **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
 
-private: 
+protected:
 
-	//UPROPERTY(Category = Character, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	//UMyCharMovComp* MyCharMov = nullptr;
+	float forwardAxesValue;
+	float rightAxesValue;
 };
 
