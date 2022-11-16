@@ -4,7 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+
+#include "MyCharMovComp.h"
+
 #include "PolarisCharacter.generated.h"
+
+
 
 class UInputComponent;
 class USkeletalMeshComponent;
@@ -49,6 +54,12 @@ protected:
 	void OnPrimaryAction();
 
 	void Bolt();
+
+	void Crouch();
+
+	virtual bool CanJumpInternal_Implementation() const override;
+
+	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode) override;
 
 	/** Handles moving forward/backward */
 	void MoveForward(float Val);
@@ -105,5 +116,10 @@ protected:
 
 	float forwardAxesValue;
 	float rightAxesValue;
+
+
+private: 
+
+	UMyCharMovComp* CharMovComp = nullptr;
 };
 

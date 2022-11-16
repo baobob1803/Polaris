@@ -45,7 +45,7 @@ void APolarisCharacter::BeginPlay()
 	// Call the base class  
 	Super::BeginPlay();
 
-	//MyCharMov = Cast<UMyCharMovComp>(GetCharacterMovement());
+	CharMovComp = Cast<UMyCharMovComp>(GetCharacterMovement());
 }
 
 //////////////////////////////////////////////////////////////////////////// Input
@@ -64,6 +64,9 @@ void APolarisCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerI
 
 	// Bolt event
 	PlayerInputComponent->BindAction("Bolt", IE_Pressed, this, &APolarisCharacter::Bolt);
+
+	// Bolt event
+	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &APolarisCharacter::Crouch);
 
 	// Enable touchscreen input
 	EnableTouchscreenMovement(PlayerInputComponent);
@@ -112,7 +115,33 @@ void APolarisCharacter::EndTouch(const ETouchIndex::Type FingerIndex, const FVec
 	TouchItem.bIsPressed = false;
 }
 
+void APolarisCharacter::OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode)
+{
+	Super::OnMovementModeChanged(PrevMovementMode, PreviousCustomMode);
 
+	switch (PrevMovementMode)
+	{
+	case MOVE_None:
+		break;
+	case MOVE_Walking:
+		break;
+	case MOVE_NavWalking:
+		break;
+	case MOVE_Falling:
+		CharMovComp->LandingBehviour();
+		break;
+	case MOVE_Swimming:
+		break;
+	case MOVE_Flying:
+		break;
+	case MOVE_Custom:
+		break;
+	case MOVE_MAX:
+		break;
+	default:
+		break;
+	}
+}
 
 #pragma region Locomotion
 
@@ -161,21 +190,26 @@ void APolarisCharacter::EndTouch(const ETouchIndex::Type FingerIndex, const FVec
 		// Normalize the Vector 
 		FVector boltDirectionNormalized = boltDirection.GetSafeNormal();
 
-		UMyCharMovComp* MyCharMov = Cast<UMyCharMovComp>(GetCharacterMovement());
-		
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Use Bolt!"));
-
-
-		if (MyCharMov)
+		if (CharMovComp)
 		{
 			if (boltDirection.Length() != 0)
-				MyCharMov->UseBolt(boltDirectionNormalized);
+				CharMovComp->UseBolt(boltDirectionNormalized);
 			else
-				MyCharMov->UseBolt(GetActorForwardVector());
+				CharMovComp->UseBolt(GetActorForwardVector());
 		}
 	}
 
+	void APolarisCharacter::Crouch()
+	{
+		CharMovComp->UseCrouch();
+	}
+
 #pragma endregion Locomotion
+
+bool APolarisCharacter::CanJumpInternal_Implementation() const
+{
+	return JumpIsAllowedInternal();
+}
 
 bool APolarisCharacter::EnableTouchscreenMovement(class UInputComponent* PlayerInputComponent)
 {
