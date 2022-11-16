@@ -125,6 +125,7 @@ void UMyCharMovComp::TickComponent(float delta_time, ELevelTick tick_type, FActo
 bool UMyCharMovComp::CanAttemptJump() const
 {
 	return IsJumpAllowed() &&
+		bCanJump &&
 		(IsMovingOnGround() || IsFalling()); // Falling included for double-jump and non-zero jump hold time, but validated by character.
 }
 
@@ -134,8 +135,6 @@ bool UMyCharMovComp::DoJump(bool bReplayiingMoves)
 	{
 		if (!bConstrainToPlane || FMath::Abs(PlaneConstraintNormal.Z) != 1.0f)
 		{
-			
-
 			if (jumpCurve)
 			{
 				if (!isJumping)
@@ -152,6 +151,8 @@ bool UMyCharMovComp::DoJump(bool bReplayiingMoves)
 					isJumping = true;
 					jumpTime = jumpMinTime;
 					prevJumpCurveValue = jumpCurve->GetFloatValue(jumpMinTime);
+
+					bCanJump = false;
 
 					return true;
 				}
@@ -263,24 +264,27 @@ bool UMyCharMovComp::DoJump(bool bReplayiingMoves)
 
 	void UMyCharMovComp::LandingBehviour()
 	{
-
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Speed"));
-
-		UE_LOG(LogTemp, Warning, TEXT("Value = %f"), defaultWalkSpeed);
-
-		MaxWalkSpeed = defaultWalkSpeed / 2;
-
-		if (GetIsFastFalling())
+		if (MovementMode = MOVE_Walking)
 		{
-			isFastFalling = false;
 
-			actualRecoveryTime = jumpRecoveryTime + fastFallRecoveryTime;
-			GetWorld()->GetTimerManager().UnPauseTimer(recoveryLandingHandler);
-		}
-		else
-		{
-			actualRecoveryTime = jumpRecoveryTime;
-			GetWorld()->GetTimerManager().UnPauseTimer(recoveryLandingHandler);
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Speed"));
+
+			UE_LOG(LogTemp, Warning, TEXT("Value = %f"), defaultWalkSpeed);
+
+			MaxWalkSpeed = defaultWalkSpeed / 2;
+
+			if (GetIsFastFalling())
+			{
+				isFastFalling = false;
+
+				actualRecoveryTime = jumpRecoveryTime + fastFallRecoveryTime;
+				GetWorld()->GetTimerManager().UnPauseTimer(recoveryLandingHandler);
+			}
+			else
+			{
+				actualRecoveryTime = jumpRecoveryTime;
+				GetWorld()->GetTimerManager().UnPauseTimer(recoveryLandingHandler);
+			}
 		}
 	}
 
@@ -298,6 +302,8 @@ bool UMyCharMovComp::DoJump(bool bReplayiingMoves)
 		if (actualRecoveryTime <= 0)
 		{
 			MaxWalkSpeed = defaultWalkSpeed;
+			  
+			bCanJump = true;
 
 			GetWorld()->GetTimerManager().PauseTimer(recoveryLandingHandler);
 		}

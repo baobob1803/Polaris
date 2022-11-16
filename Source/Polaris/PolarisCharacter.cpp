@@ -128,7 +128,8 @@ void APolarisCharacter::OnMovementModeChanged(EMovementMode PrevMovementMode, ui
 	case MOVE_NavWalking:
 		break;
 	case MOVE_Falling:
-		CharMovComp->LandingBehviour();
+		if (CharMovComp->MovementMode == MOVE_Walking)
+			CharMovComp->LandingBehviour();
 		break;
 	case MOVE_Swimming:
 		break;

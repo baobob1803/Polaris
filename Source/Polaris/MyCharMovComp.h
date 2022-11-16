@@ -68,6 +68,7 @@ protected:
 private:
 
 	bool isJumping;
+	bool bCanJump = true;
 	float jumpTime;
 	float prevJumpCurveValue;
 
