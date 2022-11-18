@@ -33,6 +33,8 @@ protected:
 
 	void RecoverAfterLanding();
 
+	void JumpBoostTimer();
+
 public: 
 
 	void UseBolt(FVector direction);
@@ -94,5 +96,11 @@ private:
 	float actualRecoveryTime;
 	FTimerHandle recoveryLandingHandler;
 
+	FTimerHandle boostJumpTimerHandler;
+	bool boostJumpAvailable = false;
+	float boostJumpRemainTime;
+
 	float defaultWalkSpeed;
+
+	FVector startJumpLoc;
 };

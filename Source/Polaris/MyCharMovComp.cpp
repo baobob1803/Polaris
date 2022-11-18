@@ -27,11 +27,14 @@ void UMyCharMovComp::BeginPlay()
 	GetWorld()->GetTimerManager().SetTimer(fallFasterHandler, this, &UMyCharMovComp::CrouchFallFaster, 0.1f, true);
 	GetWorld()->GetTimerManager().PauseTimer(fallFasterHandler);
 
-	GetWorld()->GetTimerManager().SetTimer(slideHandler, this, &UMyCharMovComp::SlideTimer, 0.1f, true);
+	GetWorld()->GetTimerManager().SetTimer(slideHandler, this, &UMyCharMovComp::SlideTimer, 0.01f, true);
 	GetWorld()->GetTimerManager().PauseTimer(slideHandler);
 
 	GetWorld()->GetTimerManager().SetTimer(recoveryLandingHandler, this, &UMyCharMovComp::RecoverAfterLanding, 0.01f, true);
 	GetWorld()->GetTimerManager().PauseTimer(recoveryLandingHandler);
+
+	GetWorld()->GetTimerManager().SetTimer(boostJumpTimerHandler, this, &UMyCharMovComp::JumpBoostTimer, 0.01f, true);
+	GetWorld()->GetTimerManager().PauseTimer(boostJumpTimerHandler);
 }
 
 void UMyCharMovComp::TickComponent(float delta_time, ELevelTick tick_type, FActorComponentTickFunction* tick_function)
@@ -96,9 +99,7 @@ void UMyCharMovComp::TickComponent(float delta_time, ELevelTick tick_type, FActo
 			FindFloor(capsulLocation, floorResulst, false);
 
 			if (floorResulst.IsWalkableFloor() && IsValidLandingSpot(capsulLocation, floorResulst.HitResult))
-			{
 				SetMovementMode(MOVE_Walking);
-			}
 			else
 				SetMovementMode(MOVE_Falling);
 
@@ -114,6 +115,7 @@ void UMyCharMovComp::TickComponent(float delta_time, ELevelTick tick_type, FActo
 		if (boltRemainTime <= 0)
 		{
 			Velocity = FVector(0,0,0);
+			
 			isBolting = false;
 			boltCDRemainTime = boltCDDuration;
 			SetMovementMode(MOVE_Falling);
@@ -139,11 +141,22 @@ bool UMyCharMovComp::DoJump(bool bReplayiingMoves)
 			{
 				if (!isJumping)
 				{
+					bWantsToCrouch = false;
+
+					startJumpLoc = CharacterOwner->GetActorLocation();
+
 					if (isSliding)
 					{
-						MaxWalkSpeed = MaxWalkSpeedCrouched;
-						bWantsToCrouch = false;
+						GetWorld()->GetTimerManager().PauseTimer(slideHandler);
 						isSliding = false;
+					}
+						
+					if (boostJumpAvailable)
+					{
+						boostJumpAvailable = false;
+						GetWorld()->GetTimerManager().PauseTimer(boostJumpTimerHandler);
+						isSliding = false;
+						MaxWalkSpeed = MaxWalkSpeedCrouched;
 					}
 
 					SetMovementMode(MOVE_Falling);
@@ -167,6 +180,19 @@ bool UMyCharMovComp::DoJump(bool bReplayiingMoves)
 	return false;
 
 	return Super::DoJump(bReplayiingMoves);
+}
+
+void UMyCharMovComp::JumpBoostTimer()
+{
+	boostJumpRemainTime -= 0.01f;
+
+	if (boostJumpRemainTime <= 0)
+	{
+		boostJumpAvailable = false;
+		MaxWalkSpeed = defaultWalkSpeed;
+		GetWorld()->GetTimerManager().PauseTimer(boostJumpTimerHandler);
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Boost no Available"));
+	}
 }
 
 #pragma region Bolt
@@ -194,9 +220,7 @@ bool UMyCharMovComp::DoJump(bool bReplayiingMoves)
 		FindFloor(capsulLocation, floorResulst, false);
 
 		if (floorResulst.IsWalkableFloor() && IsValidLandingSpot(capsulLocation, floorResulst.HitResult))
-		{
 			boltTouchFloorAfter = true;
-		}
 
 		if (boltCDRemainTime <= 0 && boltTouchFloorAfter)
 		{
@@ -206,7 +230,7 @@ bool UMyCharMovComp::DoJump(bool bReplayiingMoves)
 		}
 	}
 
-#pragma endregion Bolt
+#pragma endregion 
 
 #pragma region Crouch
 
@@ -241,11 +265,24 @@ bool UMyCharMovComp::DoJump(bool bReplayiingMoves)
 			GetWorld()->GetTimerManager().PauseTimer(fallFasterHandler);
 	}
 	
+	//
 	void UMyCharMovComp::SlideTimer()
 	{
-		slideRemainTime -= 0.1f;
+		slideRemainTime -= 0.01f;
 
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Purple, TEXT("-0.5f"));
+		//Check if is at the end of the Slide
+		if (slideRemainTime <= (slideDuration / 4) && !boostJumpAvailable)
+		{
+			boostJumpAvailable = true;
+
+			//
+			boostJumpRemainTime = slideRemainTime * 6;
+			MaxWalkSpeed = defaultWalkSpeed * 1.5;
+			GetWorld()->GetTimerManager().UnPauseTimer(boostJumpTimerHandler);
+			
+
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Boost Available"));
+		}
 
 		if (slideRemainTime <= 0)
 		{
@@ -258,33 +295,33 @@ bool UMyCharMovComp::DoJump(bool bReplayiingMoves)
 		}
 	}
 
-#pragma endregion Crouch
+#pragma endregion 
 
 #pragma region Landing
 
+	// 
 	void UMyCharMovComp::LandingBehviour()
 	{
+		// Check if he is in the Character Walk
 		if (MovementMode = MOVE_Walking)
 		{
+			// Reset Walk speed
+			MaxWalkSpeed = defaultWalkSpeed;
 
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Speed"));
+			startJumpLoc = CharacterOwner->GetActorLocation() - startJumpLoc;
 
-			UE_LOG(LogTemp, Warning, TEXT("Value = %f"), defaultWalkSpeed);
+			GEngine->AddOnScreenDebugMessage(-1, 30.f, FColor::Orange, FString::Printf(TEXT("My Location is: %s"), *startJumpLoc.ToString()));
 
-			MaxWalkSpeed = defaultWalkSpeed / 2;
-
+			//Check if the character fast falled before landing
 			if (GetIsFastFalling())
 			{
 				isFastFalling = false;
-
 				actualRecoveryTime = jumpRecoveryTime + fastFallRecoveryTime;
-				GetWorld()->GetTimerManager().UnPauseTimer(recoveryLandingHandler);
 			}
 			else
-			{
 				actualRecoveryTime = jumpRecoveryTime;
-				GetWorld()->GetTimerManager().UnPauseTimer(recoveryLandingHandler);
-			}
+
+			GetWorld()->GetTimerManager().UnPauseTimer(recoveryLandingHandler);
 		}
 	}
 
@@ -293,23 +330,20 @@ bool UMyCharMovComp::DoJump(bool bReplayiingMoves)
 		return isFastFalling;
 	}
 
+	// 
 	void UMyCharMovComp::RecoverAfterLanding()
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("recover"));
-
 		actualRecoveryTime -= 0.01f;
 
 		if (actualRecoveryTime <= 0)
 		{
-			MaxWalkSpeed = defaultWalkSpeed;
-			  
+			//MaxWalkSpeed = defaultWalkSpeed;
 			bCanJump = true;
-
 			GetWorld()->GetTimerManager().PauseTimer(recoveryLandingHandler);
 		}
 	}
 
-#pragma endregion Crouch
+#pragma endregion 
 
 /*bool UMyCharMovComp::IsFalling() const
 {
