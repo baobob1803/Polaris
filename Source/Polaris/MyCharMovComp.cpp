@@ -21,6 +21,8 @@ void UMyCharMovComp::BeginPlay()
 
 	defaultWalkSpeed = MaxWalkSpeed;
 
+	MaxWalkSpeedCrouched = slideSpeed;
+
 	GetWorld()->GetTimerManager().SetTimer(boltCoolDownHandler, this, &UMyCharMovComp::BoltCoolDown, 0.1f, true);
 	GetWorld()->GetTimerManager().PauseTimer(boltCoolDownHandler);
 
@@ -35,6 +37,9 @@ void UMyCharMovComp::BeginPlay()
 
 	GetWorld()->GetTimerManager().SetTimer(boostJumpTimerHandler, this, &UMyCharMovComp::JumpBoostTimer, 0.01f, true);
 	GetWorld()->GetTimerManager().PauseTimer(boostJumpTimerHandler);
+
+	GetWorld()->GetTimerManager().SetTimer(slideCDHandler, this, &UMyCharMovComp::SlideCD, 0.01f, true);
+	GetWorld()->GetTimerManager().PauseTimer(slideCDHandler);
 }
 
 void UMyCharMovComp::TickComponent(float delta_time, ELevelTick tick_type, FActorComponentTickFunction* tick_function)
@@ -145,18 +150,20 @@ bool UMyCharMovComp::DoJump(bool bReplayiingMoves)
 
 					startJumpLoc = CharacterOwner->GetActorLocation();
 
-					if (isSliding)
+					if (isSliding && !boostJumpAvailable)
 					{
 						GetWorld()->GetTimerManager().PauseTimer(slideHandler);
 						isSliding = false;
-					}
-						
-					if (boostJumpAvailable)
+						SetMovementMode(MOVE_Walking);
+						Velocity = Velocity.GetSafeNormal() * defaultWalkSpeed;
+					}	
+					else if (boostJumpAvailable)
 					{
 						boostJumpAvailable = false;
+						GetWorld()->GetTimerManager().PauseTimer(slideHandler);
 						GetWorld()->GetTimerManager().PauseTimer(boostJumpTimerHandler);
 						isSliding = false;
-						MaxWalkSpeed = MaxWalkSpeedCrouched;
+						Velocity = Velocity.GetSafeNormal() * MaxWalkSpeedCrouched;
 					}
 
 					SetMovementMode(MOVE_Falling);
@@ -238,16 +245,13 @@ void UMyCharMovComp::JumpBoostTimer()
 	{
 		if (MovementMode == MOVE_Falling && !isBolting)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("I'm falling!"));
-
 			isJumping = false;
 			isFastFalling = true;
 			GetWorld()->GetTimerManager().UnPauseTimer(fallFasterHandler);
 		}
-		else if (MovementMode == MOVE_Walking && Velocity.Equals(FVector3d(0, 0, 0)) == false && !isSliding)
+		else if (MovementMode == MOVE_Walking && Velocity.Equals(FVector3d(0, 0, 0)) == false && canSlide)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("I'm Walking!"));
-
+			canSlide = false;
 			slideRemainTime = slideDuration;
 			isSliding = true;
 
@@ -265,6 +269,17 @@ void UMyCharMovComp::JumpBoostTimer()
 			GetWorld()->GetTimerManager().PauseTimer(fallFasterHandler);
 	}
 	
+	void UMyCharMovComp::SlideCD()
+	{
+		slideCDRemaining -= 0.01f;
+
+		if (slideCDRemaining <= 0.0f)
+		{
+			GetWorld()->GetTimerManager().PauseTimer(slideCDHandler);
+			canSlide = true;
+		}
+	}
+
 	//
 	void UMyCharMovComp::SlideTimer()
 	{
@@ -290,8 +305,9 @@ void UMyCharMovComp::JumpBoostTimer()
 			GetWorld()->GetTimerManager().PauseTimer(slideHandler);
 
 			isSliding = false;
+			slideCDRemaining = slideCooldown;
 
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Purple, TEXT("Stop Crouch"));
+			GetWorld()->GetTimerManager().UnPauseTimer(slideCDHandler);
 		}
 	}
 
@@ -307,7 +323,7 @@ void UMyCharMovComp::JumpBoostTimer()
 		{
 			// Reset Walk speed
 			MaxWalkSpeed = defaultWalkSpeed;
-
+			canSlide = true;
 			startJumpLoc = CharacterOwner->GetActorLocation() - startJumpLoc;
 
 			GEngine->AddOnScreenDebugMessage(-1, 30.f, FColor::Orange, FString::Printf(TEXT("My Location is: %s"), *startJumpLoc.ToString()));

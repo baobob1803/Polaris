@@ -35,6 +35,8 @@ protected:
 
 	void JumpBoostTimer();
 
+	void SlideCD();
+
 public: 
 
 	void UseBolt(FVector direction);
@@ -46,13 +48,16 @@ public:
 	void LandingBehviour();
 
 protected: 
-	UPROPERTY(EDITAnywhere, BlueprintReadWrite, Category = "Custom Movement", meta = (DisplayName = "Jump Curve"))
+	UPROPERTY(EDITAnywhere, BlueprintReadWrite, Category = "Custom Jump", meta = (DisplayName = "Jump Curve"))
 	UCurveFloat * jumpCurve;
 
-	UPROPERTY(EDITAnywhere, BlueprintReadWrite, Category = "Custom Movement", meta = (DisplayName = "Jump Recovery Time"))
+	UPROPERTY(EDITAnywhere, BlueprintReadWrite, Category = "Custom Jump", meta = (DisplayName = "Jump Recovery Time"))
 	float jumpRecoveryTime = 0.15f;
 
-	UPROPERTY(EDITAnywhere, BlueprintReadWrite, Category = "Bolt", meta = (DisplayName = "Bolt Strength"))
+	UPROPERTY(EDITAnywhere, BlueprintReadWrite, Category = "Custom Jump", meta = (DisplayName = "Fast Fall Recovery Time"))
+	float fastFallRecoveryTime = 0.1f;
+
+	UPROPERTY(EDITAnywhere, BlueprintReadWrite, Category = "Bolt", meta = (DisplayName = "Bolt Strength", ToolTip = "Have effect on the speed and distance"))
 	float boltStrength = 300.0f;
 
 	UPROPERTY(EDITAnywhere, BlueprintReadWrite, Category = "Bolt", meta = (DisplayName = "Bolt Time"))
@@ -64,8 +69,11 @@ protected:
 	UPROPERTY(EDITAnywhere, BlueprintReadWrite, Category = "Slide", meta = (DisplayName = "Slide Time"))
 	float slideDuration = 0.5f;
 
-	UPROPERTY(EDITAnywhere, BlueprintReadWrite, Category = "Slide", meta = (DisplayName = "Fast Fall Recovery Time"))
-	float fastFallRecoveryTime = 0.1f;
+	UPROPERTY(EDITAnywhere, BlueprintReadWrite, Category = "Slide", meta = (DisplayName = "Slide Speed"))
+	float slideSpeed = 0.5f;
+
+	UPROPERTY(EDITAnywhere, BlueprintReadWrite, Category = "Slide", meta = (DisplayName = "Slide Cooldown"))
+	float slideCooldown = 0.15f;
 
 private:
 
@@ -87,11 +95,14 @@ private:
 
 	float slideRemainTime;
 	bool isSliding;
+	bool canSlide = true;
+	float slideCDRemaining;
 
 	bool isFastFalling = false;
 
 	FTimerHandle fallFasterHandler;
 	FTimerHandle slideHandler;
+	FTimerHandle slideCDHandler;
 
 	float actualRecoveryTime;
 	FTimerHandle recoveryLandingHandler;
