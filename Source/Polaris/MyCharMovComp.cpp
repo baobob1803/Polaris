@@ -263,7 +263,7 @@ void UMyCharMovComp::JumpBoostTimer()
 
 	void UMyCharMovComp::CrouchFallFaster()
 	{
-		Velocity.Z = -1000;
+		Velocity.Z = -fastFallSpeed;
 	
 		if(MovementMode == MOVE_Walking)
 			GetWorld()->GetTimerManager().PauseTimer(fallFasterHandler);

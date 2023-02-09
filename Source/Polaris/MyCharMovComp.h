@@ -54,7 +54,10 @@ protected:
 	UPROPERTY(EDITAnywhere, BlueprintReadWrite, Category = "Custom Jump", meta = (DisplayName = "Jump Recovery Time"))
 	float jumpRecoveryTime = 0.15f;
 
-	UPROPERTY(EDITAnywhere, BlueprintReadWrite, Category = "Custom Jump", meta = (DisplayName = "Fast Fall Recovery Time"))
+	UPROPERTY(EDITAnywhere, BlueprintReadWrite, Category = "Fast Fall", meta = (DisplayName = "Fast Fall Recovery Time"))
+	float fastFallSpeed = 1000.0f;
+
+	UPROPERTY(EDITAnywhere, BlueprintReadWrite, Category = "Fast Fall", meta = (DisplayName = "Fast Fall Recovery Time"))
 	float fastFallRecoveryTime = 0.1f;
 
 	UPROPERTY(EDITAnywhere, BlueprintReadWrite, Category = "Bolt", meta = (DisplayName = "Bolt Strength", ToolTip = "Have effect on the speed and distance"))
