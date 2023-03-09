@@ -18,14 +18,15 @@ void AGuns::BeginPlay()
 }
 
 
-void AGuns::PrimaryUse()
+void AGuns::PrimaryUse(FVector start, FVector direction)
 {
-	Super::PrimaryUse();
+	Super::PrimaryUse(start, direction);
+	ShootHitscan(start, direction);
 }
 
-void AGuns::SecondaryUse()
+void AGuns::SecondaryUse(FVector start, FVector direction)
 {
-	Super::SecondaryUse();
+	Super::SecondaryUse(start, direction);
 }
 
 void AGuns::ThirdUse()
@@ -35,19 +36,21 @@ void AGuns::ThirdUse()
 
 void AGuns::ShootHitscan(FVector start, FVector direction)
 {
-	FVector end = start + direction * 500.0f;
-	TArray<FHitResult> outHit;
+	FVector end = start + direction * 10000.f;
+	TArray<FHitResult> outHits;
 
 	FCollisionQueryParams collisionParams;
 
-	if (GetWorld()->LineTraceMultiByChannel(outHit, start, end, ECC_Visibility, collisionParams))
+	DrawDebugLine(GetWorld(), start, end, FColor::Green, false, 5.0f, 0, 5);
+
+	if (GetWorld()->LineTraceMultiByChannel(outHits, start, end, ECC_Visibility, collisionParams))
 	{
 		int i = 0;
-		/*for each (auto var in outHit)
+		for (auto& hit : outHits)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, FString::Printf(TEXT("The Component Being Hit is: %s"), *outHit[i].GetComponent()->GetName()));
+			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, FString::Printf(TEXT("The Component Being Hit is: %s"), *outHits[i].GetComponent()->GetName()));
 			i++;
-		}*/
+		}
 	}
 }
 

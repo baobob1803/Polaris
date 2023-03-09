@@ -25,14 +25,26 @@ void AWeapons::Tick(float DeltaTime)
 
 }
 
-void AWeapons::PrimaryUse()
+void AWeapons::PrimaryUse(FVector start, FVector direction)
 {
 }
 
-void AWeapons::SecondaryUse()
+void AWeapons::SecondaryUse(FVector start, FVector direction)
 {
 }
 
 void AWeapons::ThirdUse()
 {
 }
+
+bool AWeapons::CheckAvailableEnergy(float* energyQuantity, bool isConsume, float cost)
+{
+	if (isConsume && *energyQuantity >= cost)
+	{
+		*energyQuantity -= cost;
+		return true;
+	}
+
+	return false;
+}
+

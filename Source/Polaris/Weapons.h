@@ -27,11 +27,13 @@ public:
 protected:
 
 	UFUNCTION(BlueprintCallable)
-		virtual void PrimaryUse();
+		virtual void PrimaryUse(FVector start, FVector direction);
 
 	UFUNCTION(BlueprintCallable)
-		virtual void SecondaryUse();
+		virtual void SecondaryUse(FVector start, FVector direction);
 
 	UFUNCTION(BlueprintCallable)
 		virtual void ThirdUse();
+
+	bool CheckAvailableEnergy(float* energyQuantity, bool isConsume, float cost);
 };

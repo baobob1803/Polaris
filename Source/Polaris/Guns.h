@@ -19,8 +19,8 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	virtual void PrimaryUse() override;
-	virtual void SecondaryUse() override;
+	virtual void PrimaryUse(FVector start, FVector direction) override;
+	virtual void SecondaryUse(FVector start, FVector direction) override;
 	virtual void ThirdUse() override;
 
 	//virtual void Shoot();
